@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Schema - حاسبة نقطة التعادل</title>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1600px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.2rem;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+        
+        .schema-wrapper {
+            background: #f9f9f9;
+            border-radius: 10px;
+            padding: 30px;
+            overflow-x: auto;
+            border: 2px solid #667eea;
+        }
+        
+        svg {
+            display: block;
+            margin: 0 auto;
+            min-width: 100%;
+            height: auto;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .download-menu {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 200px;
+            box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+            padding: 12px 16px;
+            z-index: 1;
+            border-radius: 8px;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 10px;
+        }
+        
+        .dropdown-content button {
+            display: block;
+            width: 100%;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            text-align: right;
+            transition: all 0.3s ease;
+        }
+        
+        .dropdown-content button:last-child {
+            margin-bottom: 0;
+        }
+        
+        .dropdown-content button:hover {
+            background: #5568d3;
+        }
+        
+        .download-menu:hover .dropdown-content {
+            display: block;
+        }
+        
+        .legend {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .legend-item {
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .legend-item strong {
+            color: #333;
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        .legend-item span {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        
+        .legend-symbol {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            margin-right: 8px;
+            vertical-align: middle;
+            border-radius: 2px;
+        }
+        
+        @media print {
+            body {
+                background: white;
+            }
+            .btn-group {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗄️ هيكل قاعدة البيانات</h1>
+        <p class="subtitle">Database Schema - حاسبة نقطة التعادل</p>
+        
+        <div class="schema-wrapper">
+            <svg id="schema" width="800" height="1130" viewBox="0 0 800 1130"></svg>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <strong>📊 جدول Users</strong>
+                <span>يخزن بيانات المستخدمين الأساسية مثل الاسم والبريد الإلكتروني</span>
+            </div>
+            <div class="legend-item">
+                <strong>🧮 جدول Calculations</strong>
+                <span>يحتفظ بتفاصيل كل حساب بما فيها التكاليف الثابتة والمتغيرة</span>
+            </div>
+            <div class="legend-item">
+                <strong>📈 جدول Results</strong>
+                <span>يخزن نتائج الحسابات والقيم المحسوبة لنقطة التعادل</span>
+            </div>
+            <div class="legend-item">
+                <strong>📋 جدول Reports</strong>
+                <span>ينظم التقارير المختلفة والتحليلات المنتجة</span>
+            </div>
+            <div class="legend-item">
+                <strong>📉 جدول Charts</strong>
+                <span>يخزن الرسوم البيانية والبيانات البصرية</span>
+            </div>
+            <div class="legend-item">
+                <strong>🔗 العلاقات</strong>
+                <span>الخطوط توضح الروابط والعلاقات بين الجداول المختلفة</span>
+            </div>
+        </div>
+        
+        <div class="btn-group">
+            <div class="download-menu">
+                <button class="btn-primary">📥 تحميل الرسم</button>
+                <div class="dropdown-content">
+                    <button onclick="downloadPNG()">📷 تحميل كصورة PNG</button>
+                    <button onclick="downloadSVG()">📄 تحميل كملف SVG</button>
+                    <button onclick="downloadHTML()">📋 تحميل كملف HTML</button>
+                </div>
+            </div>
+            <button class="btn-primary" onclick="window.print()">🖨️ طباعة</button>
+        </div>
+    </div>
+
+    <script>
+        const svg = document.getElementById('schema');
+        const ns = "http://www.w3.org/2000/svg";
+
+        function createRect(x, y, width, height, fill, stroke, strokeWidth = 2) {
+            const rect = document.createElementNS(ns, 'rect');
+            rect.setAttribute('x', x);
+            rect.setAttribute('y', y);
+            rect.setAttribute('width', width);
+            rect.setAttribute('height', height);
+            rect.setAttribute('fill', fill);
+            rect.setAttribute('stroke', stroke);
+            rect.setAttribute('stroke-width', strokeWidth);
+            svg.appendChild(rect);
+            return rect;
+        }
+
+        function createText(x, y, text, fontSize = '14', fontWeight = 'normal', fill = '#000', textAnchor = 'middle') {
+            const textElement = document.createElementNS(ns, 'text');
+            textElement.setAttribute('x', x);
+            textElement.setAttribute('y', y);
+            textElement.setAttribute('font-size', fontSize);
+            textElement.setAttribute('font-weight', fontWeight);
+            textElement.setAttribute('fill', fill);
+            textElement.setAttribute('text-anchor', textAnchor);
+            textElement.setAttribute('font-family', 'Arial, sans-serif');
+            textElement.textContent = text;
+            svg.appendChild(textElement);
+            return textElement;
+        }
+
+        function createLine(x1, y1, x2, y2, stroke = '#000', strokeWidth = 2, isDashed = false) {
+            const line = document.createElementNS(ns, 'line');
+            line.setAttribute('x1', x1);
+            line.setAttribute('y1', y1);
+            line.setAttribute('x2', x2);
+            line.setAttribute('y2', y2);
+            line.setAttribute('stroke', stroke);
+            line.setAttribute('stroke-width', strokeWidth);
+            if (isDashed) {
+                line.setAttribute('stroke-dasharray', '5,5');
+            }
+            svg.appendChild(line);
+            return line;
+        }
+
+        function createArrow(x1, y1, x2, y2, stroke = '#000', strokeWidth = 2) {
+            // Draw line
+            const line = document.createElementNS(ns, 'line');
+            line.setAttribute('x1', x1);
+            line.setAttribute('y1', y1);
+            line.setAttribute('x2', x2);
+            line.setAttribute('y2', y2);
+            line.setAttribute('stroke', stroke);
+            line.setAttribute('stroke-width', strokeWidth);
+            svg.appendChild(line);
+
+            // Calculate arrow angle
+            const angle = Math.atan2(y2 - y1, x2 - x1);
+            const arrowSize = 10;
+
+            // Draw arrowhead
+            const points = [
+                [x2, y2],
+                [x2 - arrowSize * Math.cos(angle - Math.PI / 6), y2 - arrowSize * Math.sin(angle - Math.PI / 6)],
+                [x2 - arrowSize * Math.cos(angle + Math.PI / 6), y2 - arrowSize * Math.sin(angle + Math.PI / 6)]
+            ];
+            
+            const polygon = document.createElementNS(ns, 'polygon');
+            polygon.setAttribute('points', points.map(p => p.join(',')).join(' '));
+            polygon.setAttribute('fill', stroke);
+            svg.appendChild(polygon);
+        }
+
+        // Title
+        createRect(30, 15, 740, 40, '#667eea', '#333', 2);
+        createText(400, 40, 'هيكل قاعدة البيانات', '16', 'bold', 'white');
+
+        // Table 1: Users
+        createRect(50, 80, 130, 90, '#4CAF50', '#333', 2);
+        createText(115, 95, 'Users', '13', 'bold', 'white');
+        createText(115, 108, 'المستخدمون', '11', 'normal', 'white');
+        createText(58, 122, 'PK: UserID', '10', 'normal', '#ffeb3b');
+        createText(58, 135, 'Name', '10', 'normal', 'white');
+        createText(58, 148, 'Email', '10', 'normal', 'white');
+
+        // Table 2: Calculations
+        createRect(220, 80, 130, 90, '#2196F3', '#333', 2);
+        createText(285, 95, 'Calculations', '12', 'bold', 'white');
+        createText(285, 108, 'الحسابات', '11', 'normal', 'white');
+        createText(228, 122, 'PK: CalcID', '10', 'normal', '#ffeb3b');
+        createText(228, 135, 'FK: UserID', '10', 'normal', '#FFD700');
+        createText(228, 148, 'FixedCost', '10', 'normal', 'white');
+
+        // Table 3: Results
+        createRect(390, 80, 130, 90, '#FF9800', '#333', 2);
+        createText(455, 95, 'Results', '13', 'bold', 'white');
+        createText(455, 108, 'النتائج', '11', 'normal', 'white');
+        createText(398, 122, 'PK: ResultID', '10', 'normal', '#ffeb3b');
+        createText(398, 135, 'FK: CalcID', '10', 'normal', '#FFD700');
+        createText(398, 148, 'BEP_Units', '10', 'normal', 'white');
+
+        // Table 4: Reports
+        createRect(560, 80, 130, 90, '#F44336', '#333', 2);
+        createText(625, 95, 'Reports', '13', 'bold', 'white');
+        createText(625, 108, 'التقارير', '11', 'normal', 'white');
+        createText(568, 122, 'PK: ReportID', '10', 'normal', '#ffeb3b');
+        createText(568, 135, 'FK: ResultID', '10', 'normal', '#FFD700');
+        createText(568, 148, 'ReportName', '10', 'normal', 'white');
+
+        // Table 5: Charts
+        createRect(730, 80, 20, 90, '#9C27B0', '#333', 2);
+        createText(740, 95, 'C', '11', 'bold', 'white');
+        createText(740, 110, 'Charts', '7', 'bold', 'white');
+
+        // Draw relationships with arrows
+        // Users to Calculations
+        createArrow(180, 115, 220, 115, '#333', 2);
+        createText(197, 102, '1:M', '9', 'bold', '#d62828');
+
+        // Calculations to Results
+        createArrow(350, 115, 390, 115, '#333', 2);
+        createText(367, 102, '1:M', '11', 'bold', '#d62828');
+
+        // Results to Reports
+        createArrow(520, 115, 560, 115, '#333', 2);
+        createText(537, 102, '1:M', '11', 'bold', '#d62828');
+
+        // Reports to Charts
+        createArrow(690, 115, 730, 115, '#333', 2);
+        createText(707, 102, 'M:M', '11', 'bold', '#d62828');
+
+        // Add legend box
+        const legendY = 220;
+        createRect(30, legendY, 740, 300, '#f0f0f0', '#999', 1);
+        createText(400, legendY + 20, '📋 شرح الرموز والحقول', '14', 'bold', '#333');
+
+        // Legend details
+        createText(50, legendY + 42, 'PK: Primary Key - معرف فريد', '13', 'normal', '#333');
+        createText(50, legendY + 56, 'FK: Foreign Key - مفتاح خارجي يشير جدول آخر', '13', 'normal', '#333');
+        createText(50, legendY + 70, '1:M: واحد إلى عديد', '13', 'normal', '#333');
+
+        createText(50, legendY + 92, '🟩 Users: معلومات المستخدمين', '12', 'normal', '#333');
+        createText(50, legendY + 105, '🟦 Calculations: بيانات الحساب (التكاليف والسعر)', '12', 'normal', '#333');
+        createText(50, legendY + 118, '🟧 Results: نتائج الحسابات', '12', 'normal', '#333');
+        createText(50, legendY + 131, '🟥 Reports: التقارير المختلفة', '12', 'normal', '#333');
+        createText(50, legendY + 144, '🟪 Charts: الرسوم البيانية', '12', 'normal', '#333');
+
+        function downloadPNG() {
+            const wrapper = document.createElement('div');
+            wrapper.style.backgroundColor = 'white';
+            wrapper.style.padding = '30px';
+            wrapper.style.borderRadius = '15px';
+            
+            const clonedSvg = svg.cloneNode(true);
+            wrapper.appendChild(clonedSvg);
+            
+            document.body.appendChild(wrapper);
+            
+            html2canvas(wrapper, {
+                backgroundColor: '#ffffff',
+                scale: 2,
+                allowTaint: true,
+                useCORS: true,
+                logging: false
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL('image/png');
+                link.download = 'Database_Schema.png';
+                link.click();
+                
+                document.body.removeChild(wrapper);
+            }).catch(err => {
+                console.error('خطأ في تحميل الصورة:', err);
+                document.body.removeChild(wrapper);
+                alert('عذراً، حدث خطأ في تحميل الصورة. يرجى المحاولة مجدداً.');
+            });
+        }
+
+        function downloadSVG() {
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const link = document.createElement('a');
+            link.href = 'data:image/svg+xml;base64,' + btoa(svgData);
+            link.download = 'Database_Schema.svg';
+            link.click();
+        }
+
+        function downloadHTML() {
+            const htmlContent = document.documentElement.outerHTML;
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'Database_Schema.html';
+            link.click();
+        }
+    </script>
+</body>
+</html>

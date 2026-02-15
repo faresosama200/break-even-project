@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DFD مفصل - حاسبة نقطة التعادل</title>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 850px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 2rem;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+        
+        svg {
+            display: block;
+            margin: 0 auto;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #f77f00;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #e67e00;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(247, 127, 0, 0.4);
+        }
+        
+        .download-menu {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 200px;
+            box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+            padding: 12px 16px;
+            z-index: 1;
+            border-radius: 8px;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 10px;
+        }
+        
+        .dropdown-content button {
+            display: block;
+            width: 100%;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            text-align: right;
+            transition: all 0.3s ease;
+        }
+        
+        .dropdown-content button:last-child {
+            margin-bottom: 0;
+        }
+        
+        .dropdown-content button:hover {
+            background: #5568d3;
+        }
+        
+        .download-menu:hover .dropdown-content {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 رسم تدفق البيانات (DFD)</h1>
+        <p class="subtitle">Data Flow Diagram - Detailed Level 0</p>
+        
+        <svg id="canvas" width="800" height="1130" viewBox="0 0 800 1130"></svg>
+        
+        <div class="btn-group">
+            <div class="download-menu">
+                <button class="btn-primary">📥 تحميل الرسم</button>
+                <div class="dropdown-content">
+                    <button onclick="downloadPNG()">📷 تحميل كصورة PNG</button>
+                    <button onclick="downloadSVG()">📄 تحميل كملف SVG</button>
+                    <button onclick="downloadHTML()">📋 تحميل كملف HTML</button>
+                </div>
+            </div>
+            <button class="btn-primary" onclick="window.print()">🖨️ طباعة</button>
+        </div>
+    </div>
+
+    <script>
+        const svg = document.getElementById('canvas');
+        const ns = "http://www.w3.org/2000/svg";
+
+        // Helper function to create rectangles
+        function createRect(x, y, width, height, fill, stroke, strokeWidth = 2) {
+            const rect = document.createElementNS(ns, 'rect');
+            rect.setAttribute('x', x);
+            rect.setAttribute('y', y);
+            rect.setAttribute('width', width);
+            rect.setAttribute('height', height);
+            rect.setAttribute('fill', fill);
+            rect.setAttribute('stroke', stroke);
+            rect.setAttribute('stroke-width', strokeWidth);
+            svg.appendChild(rect);
+            return rect;
+        }
+
+        // Helper function to create circles (processes)
+        function createCircle(x, y, r, fill, stroke, strokeWidth = 2) {
+            const circle = document.createElementNS(ns, 'circle');
+            circle.setAttribute('cx', x);
+            circle.setAttribute('cy', y);
+            circle.setAttribute('r', r);
+            circle.setAttribute('fill', fill);
+            circle.setAttribute('stroke', stroke);
+            circle.setAttribute('stroke-width', strokeWidth);
+            svg.appendChild(circle);
+            return circle;
+        }
+
+        // Helper function to create text
+        function createText(x, y, text, fontSize = '14', fontWeight = 'normal', fill = '#000', textAnchor = 'middle') {
+            const textElement = document.createElementNS(ns, 'text');
+            textElement.setAttribute('x', x);
+            textElement.setAttribute('y', y);
+            textElement.setAttribute('font-size', fontSize);
+            textElement.setAttribute('font-weight', fontWeight);
+            textElement.setAttribute('fill', fill);
+            textElement.setAttribute('text-anchor', textAnchor);
+            textElement.setAttribute('font-family', 'Arial, sans-serif');
+            textElement.textContent = text;
+            svg.appendChild(textElement);
+            return textElement;
+        }
+
+        // Helper function to create lines/arrows
+        function createLine(x1, y1, x2, y2, stroke = '#000', strokeWidth = 2, marker = false) {
+            const line = document.createElementNS(ns, 'line');
+            line.setAttribute('x1', x1);
+            line.setAttribute('y1', y1);
+            line.setAttribute('x2', x2);
+            line.setAttribute('y2', y2);
+            line.setAttribute('stroke', stroke);
+            line.setAttribute('stroke-width', strokeWidth);
+            if (marker) {
+                line.setAttribute('marker-end', 'url(#arrowhead)');
+            }
+            svg.appendChild(line);
+            return line;
+        }
+
+        // Define arrowhead marker
+        const defs = document.createElementNS(ns, 'defs');
+        const marker = document.createElementNS(ns, 'marker');
+        marker.setAttribute('id', 'arrowhead');
+        marker.setAttribute('markerWidth', '10');
+        marker.setAttribute('markerHeight', '10');
+        marker.setAttribute('refX', '9');
+        marker.setAttribute('refY', '3');
+        marker.setAttribute('orient', 'auto');
+        const polygon = document.createElementNS(ns, 'polygon');
+        polygon.setAttribute('points', '0 0, 10 3, 0 6');
+        polygon.setAttribute('fill', '#000');
+        marker.appendChild(polygon);
+        defs.appendChild(marker);
+        svg.appendChild(defs);
+
+        // Draw Title Box
+        createRect(30, 20, 740, 50, '#667eea', '#333', 3);
+        createText(400, 50, 'نظام حاسبة نقطة التعادل', '18', 'bold', 'white');
+
+        // External Entity - User
+        createRect(80, 100, 100, 80, '#d62828', '#333', 2);
+        createText(130, 135, 'المستخدم', '14', 'bold', 'white');
+        createText(130, 152, 'User', '11', 'normal', 'white');
+
+        // Process 1 - Input
+        createCircle(280, 140, 40, '#f77f00', '#333', 2);
+        createText(280, 135, 'P1', '13', 'bold', '#fff');
+        createText(280, 148, 'Input', '11', 'normal', '#fff');
+        createText(280, 195, 'إدخال', '11', 'normal', '#000');
+
+        // Process 2 - Calculate
+        createCircle(420, 140, 40, '#f77f00', '#333', 2);
+        createText(420, 135, 'P2', '13', 'bold', '#fff');
+        createText(420, 148, 'Calc', '11', 'normal', '#fff');
+        createText(420, 195, 'حساب', '11', 'normal', '#000');
+
+        // Process 3 - Analysis
+        createCircle(560, 140, 40, '#f77f00', '#333', 2);
+        createText(560, 135, 'P3', '13', 'bold', '#fff');
+        createText(560, 148, 'Analysis', '10', 'normal', '#fff');
+        createText(560, 195, 'تحليل', '11', 'normal', '#000');
+
+        // Process 4 - Report
+        createCircle(680, 140, 40, '#f77f00', '#333', 2);
+        createText(680, 135, 'P4', '13', 'bold', '#fff');
+        createText(680, 148, 'Report', '11', 'normal', '#fff');
+        createText(680, 195, 'تقارير', '11', 'normal', '#000');
+
+        // Data Store - Database
+        createRect(350, 280, 120, 65, '#06a77d', '#333', 2);
+        createText(410, 300, 'D1', '13', 'bold', 'white');
+        createText(410, 315, 'قاعدة البيانات', '11', 'normal', 'white');
+        createText(410, 335, 'Database', '10', 'normal', 'white');
+
+        // Output - Display Results
+        createRect(600, 280, 100, 80, '#d62828', '#333', 2);
+        createText(650, 305, 'النتائج', '14', 'bold', 'white');
+        createText(650, 325, 'Display', '12', 'normal', 'white');
+
+        // Arrows / Data Flows
+        // User -> P1
+        createLine(180, 140, 240, 140, '#000', 2, true);
+        createText(207, 128, '1', '11', 'bold', '#000');
+
+        // P1 -> P2
+        createLine(320, 140, 380, 140, '#000', 2, true);
+        createText(350, 128, 'بيانات', '10', 'normal', '#666');
+
+        // P2 -> P3
+        createLine(460, 140, 520, 140, '#000', 2, true);
+        createText(490, 128, 'نتائج', '10', 'normal', '#666');
+
+        // P3 -> P4
+        createLine(600, 140, 640, 140, '#000', 2, true);
+        createText(620, 128, 'محللة', '10', 'normal', '#666');
+
+        // P2 <-> Database
+        createLine(420, 180, 390, 280, '#06a77d', 2, true);
+        createText(395, 225, 'حفظ', '10', 'normal', '#666');
+        createLine(410, 280, 440, 180, '#06a77d', 2, false);
+        createText(445, 225, 'استرجاع', '10', 'normal', '#666');
+
+        // P4 -> Display
+        createLine(680, 180, 640, 280, '#d62828', 2, true);
+        createText(680, 225, 'النتائج', '10', 'normal', '#666');
+
+        // Display -> User
+        createLine(600, 320, 180, 140, '#d62828', 2, true);
+        createText(330, 200, 'عرض', '10', 'normal', '#d62828');
+
+        // Legend
+        const legendY = 420;
+        createRect(30, legendY, 740, 250, '#f9f9f9', '#ddd', 1);
+        createText(400, legendY + 25, '📍 المفاتيح والتعاريف', '14', 'bold', '#333');
+
+        // Legend items
+        createRect(50, legendY + 45, 20, 20, '#d62828', '#333', 1);
+        createText(110, legendY + 58, 'كيان خارجي (User)', '11', 'normal', '#333');
+
+        createCircle(60, legendY + 95, 10, '#f77f00', '#333', 1);
+        createText(110, legendY + 98, 'عملية (Process)', '11', 'normal', '#333');
+
+        createRect(50, legendY + 135, 20, 20, '#06a77d', '#333', 1);
+        createText(110, legendY + 148, 'مخزن بيانات (Database)', '11', 'normal', '#333');
+
+        createLine(50, legendY + 180, 80, legendY + 180, '#000', 2, true);
+        createText(110, legendY + 178, 'تدفق بيانات', '11', 'normal', '#333');
+
+        createText(50, legendY + 210, '1:M = واحد إلى عديد | FK = مفتاح خارجي | PK = مفتاح أساسي', '10', 'normal', '#666');
+
+        function downloadSVG() {
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const link = document.createElement('a');
+            link.href = 'data:image/svg+xml;base64,' + btoa(svgData);
+            link.download = 'DFD_نقطة_التعادل.svg';
+            link.click();
+        }
+
+        function downloadPNG() {
+            // Get the SVG element and its parent container
+            const svgElement = document.getElementById('canvas');
+            const container = document.querySelector('.container');
+            
+            // Create a temporary wrapper for just the SVG with white background
+            const wrapper = document.createElement('div');
+            wrapper.style.backgroundColor = 'white';
+            wrapper.style.padding = '30px';
+            wrapper.style.borderRadius = '15px';
+            
+            // Clone the SVG to avoid modifying the original
+            const clonedSvg = svgElement.cloneNode(true);
+            wrapper.appendChild(clonedSvg);
+            
+            // Temporarily add to DOM for rendering
+            document.body.appendChild(wrapper);
+            
+            // Use html2canvas to convert to image
+            html2canvas(wrapper, {
+                backgroundColor: '#ffffff',
+                scale: 2,
+                allowTaint: true,
+                useCORS: true,
+                logging: false
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL('image/png');
+                link.download = 'DFD_نقطة_التعادل.png';
+                link.click();
+                
+                // Remove temporary wrapper
+                document.body.removeChild(wrapper);
+            }).catch(err => {
+                console.error('خطأ في تحميل الصورة:', err);
+                document.body.removeChild(wrapper);
+                alert('عذراً، حدث خطأ في تحميل الصورة. يرجى المحاولة مجدداً.');
+            });
+        }
+
+        function downloadHTML() {
+            const htmlContent = document.documentElement.outerHTML;
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'DFD_نقطة_التعادل.html';
+            link.click();
+        }
+    </script>
+</body>
+</html>

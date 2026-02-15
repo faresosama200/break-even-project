@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERD - حاسبة نقطة التعادل</title>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 850px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 2rem;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+        
+        svg {
+            display: block;
+            margin: 0 auto;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #f77f00;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #e67e00;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(247, 127, 0, 0.4);
+        }
+        
+        .download-menu {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 200px;
+            box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+            padding: 12px 16px;
+            z-index: 1;
+            border-radius: 8px;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 10px;
+        }
+        
+        .dropdown-content button {
+            display: block;
+            width: 100%;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            text-align: right;
+            transition: all 0.3s ease;
+        }
+        
+        .dropdown-content button:last-child {
+            margin-bottom: 0;
+        }
+        
+        .dropdown-content button:hover {
+            background: #5568d3;
+        }
+        
+        .download-menu:hover .dropdown-content {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗂️ نموذج الكيانات والعلاقات (ERD)</h1>
+        <p class="subtitle">Entity Relationship Diagram</p>
+        
+        <svg id="canvas" width="800" height="1130" viewBox="0 0 800 1130"></svg>
+        
+        <div class="btn-group">
+            <div class="download-menu">
+                <button class="btn-primary">📥 تحميل الرسم</button>
+                <div class="dropdown-content">
+                    <button onclick="downloadPNG()">📷 تحميل كصورة PNG</button>
+                    <button onclick="downloadSVG()">📄 تحميل كملف SVG</button>
+                    <button onclick="downloadHTML()">📋 تحميل كملف HTML</button>
+                </div>
+            </div>
+            <button class="btn-primary" onclick="window.print()">🖨️ طباعة</button>
+        </div>
+    </div>
+
+    <script>
+        const svg = document.getElementById('canvas');
+        const ns = "http://www.w3.org/2000/svg";
+
+        // Helper function to create rectangles
+        function createRect(x, y, width, height, fill, stroke, strokeWidth = 2) {
+            const rect = document.createElementNS(ns, 'rect');
+            rect.setAttribute('x', x);
+            rect.setAttribute('y', y);
+            rect.setAttribute('width', width);
+            rect.setAttribute('height', height);
+            rect.setAttribute('fill', fill);
+            rect.setAttribute('stroke', stroke);
+            rect.setAttribute('stroke-width', strokeWidth);
+            svg.appendChild(rect);
+            return rect;
+        }
+
+        // Helper function to create circles
+        function createCircle(x, y, r, fill, stroke, strokeWidth = 2) {
+            const circle = document.createElementNS(ns, 'circle');
+            circle.setAttribute('cx', x);
+            circle.setAttribute('cy', y);
+            circle.setAttribute('r', r);
+            circle.setAttribute('fill', fill);
+            circle.setAttribute('stroke', stroke);
+            circle.setAttribute('stroke-width', strokeWidth);
+            svg.appendChild(circle);
+            return circle;
+        }
+
+        // Helper function to create text
+        function createText(x, y, text, fontSize = '14', fontWeight = 'normal', fill = '#000', textAnchor = 'middle') {
+            const textElement = document.createElementNS(ns, 'text');
+            textElement.setAttribute('x', x);
+            textElement.setAttribute('y', y);
+            textElement.setAttribute('font-size', fontSize);
+            textElement.setAttribute('font-weight', fontWeight);
+            textElement.setAttribute('fill', fill);
+            textElement.setAttribute('text-anchor', textAnchor);
+            textElement.setAttribute('font-family', 'Arial, sans-serif');
+            textElement.textContent = text;
+            svg.appendChild(textElement);
+            return textElement;
+        }
+
+        // Helper function to create lines/arrows
+        function createLine(x1, y1, x2, y2, stroke = '#000', strokeWidth = 2, marker = false) {
+            const line = document.createElementNS(ns, 'line');
+            line.setAttribute('x1', x1);
+            line.setAttribute('y1', y1);
+            line.setAttribute('x2', x2);
+            line.setAttribute('y2', y2);
+            line.setAttribute('stroke', stroke);
+            line.setAttribute('stroke-width', strokeWidth);
+            if (marker) {
+                line.setAttribute('marker-end', 'url(#arrowhead)');
+            }
+            svg.appendChild(line);
+            return line;
+        }
+
+        // Define arrowhead marker
+        const defs = document.createElementNS(ns, 'defs');
+        const marker = document.createElementNS(ns, 'marker');
+        marker.setAttribute('id', 'arrowhead');
+        marker.setAttribute('markerWidth', '10');
+        marker.setAttribute('markerHeight', '10');
+        marker.setAttribute('refX', '9');
+        marker.setAttribute('refY', '3');
+        marker.setAttribute('orient', 'auto');
+        const polygon = document.createElementNS(ns, 'polygon');
+        polygon.setAttribute('points', '0 0, 10 3, 0 6');
+        polygon.setAttribute('fill', '#000');
+        marker.appendChild(polygon);
+        defs.appendChild(marker);
+        svg.appendChild(defs);
+
+        // Draw Title Box
+        createRect(30, 20, 740, 50, '#667eea', '#333', 3);
+        createText(400, 50, 'نموذج الكيانات والعلاقات', '18', 'bold', 'white');
+
+        // Entity 1: Users (Green)
+        createRect(50, 100, 110, 95, '#4CAF50', '#333', 2);
+        createText(105, 118, 'Users', '13', 'bold', 'white');
+        createText(105, 132, 'المستخدمون', '11', 'normal', 'white');
+        createText(105, 145, 'PK user_id', '10', 'normal', 'white');
+        createText(105, 157, 'name', '10', 'normal', 'white');
+        createText(105, 169, 'email', '10', 'normal', 'white');
+        createText(105, 181, 'password', '10', 'normal', 'white');
+
+        // Entity 2: Calculations (Blue)
+        createRect(200, 100, 110, 95, '#2196F3', '#333', 2);
+        createText(255, 118, 'Calculations', '12', 'bold', 'white');
+        createText(255, 132, 'الحسابات', '11', 'normal', 'white');
+        createText(255, 145, 'PK calc_id', '10', 'normal', 'white');
+        createText(255, 157, 'FK user_id', '10', 'normal', '#ffeb3b');
+        createText(255, 169, 'fixed_costs', '10', 'normal', 'white');
+        createText(255, 181, 'price', '10', 'normal', 'white');
+
+        // Entity 3: Results (Orange)
+        createRect(350, 100, 110, 95, '#FF9800', '#333', 2);
+        createText(405, 118, 'Results', '13', 'bold', 'white');
+        createText(405, 132, 'النتائج', '11', 'normal', 'white');
+        createText(405, 145, 'PK result_id', '10', 'normal', 'white');
+        createText(405, 157, 'FK calc_id', '10', 'normal', '#ffeb3b');
+        createText(405, 169, 'break_even', '10', 'normal', 'white');
+        createText(405, 181, 'profit', '10', 'normal', 'white');
+
+        // Entity 4: Reports (Red)
+        createRect(500, 100, 110, 95, '#F44336', '#333', 2);
+        createText(555, 118, 'Reports', '13', 'bold', 'white');
+        createText(555, 132, 'التقارير', '11', 'normal', 'white');
+        createText(555, 145, 'PK report_id', '10', 'normal', 'white');
+        createText(555, 157, 'FK result_id', '10', 'normal', '#ffeb3b');
+        createText(555, 169, 'name', '10', 'normal', 'white');
+        createText(555, 181, 'generated_at', '10', 'normal', 'white');
+
+        // Entity 5: Charts (Purple)
+        createRect(650, 100, 110, 95, '#9C27B0', '#333', 2);
+        createText(705, 118, 'Charts', '13', 'bold', 'white');
+        createText(705, 132, 'الرسوم البيانية', '10', 'normal', 'white');
+        createText(705, 145, 'PK chart_id', '10', 'normal', 'white');
+        createText(705, 157, 'chart_type', '10', 'normal', 'white');
+        createText(705, 169, 'width', '10', 'normal', 'white');
+        createText(705, 181, 'height', '10', 'normal', 'white');
+
+        // Relationships (1:M)
+        // Users -> Calculations
+        createLine(160, 130, 200, 130, '#333', 2, true);
+        createText(177, 120, '1:M', '11', 'bold', '#d62828');
+
+        // Calculations -> Results
+        createLine(310, 130, 350, 130, '#333', 2, true);
+        createText(325, 120, '1:M', '11', 'bold', '#d62828');
+
+        // Results -> Reports
+        createLine(460, 130, 500, 130, '#333', 2, true);
+        createText(475, 120, '1:M', '11', 'bold', '#d62828');
+
+        // Reports -> Charts
+        createLine(610, 130, 650, 130, '#333', 2, true);
+        createText(625, 120, '1:M', '11', 'bold', '#d62828');
+
+        // Legend
+        const legendY = 250;
+        createRect(30, legendY, 740, 230, '#f9f9f9', '#ddd', 1);
+        createText(400, legendY + 22, '📖 شرح الرموز', '14', 'bold', '#333');
+
+        createRect(50, legendY + 40, 16, 16, '#ffeb3b', '#333', 1);
+        createText(110, legendY + 50, 'مفتاح خارجي (FK - Foreign Key)', '11', 'normal', '#333');
+
+        createText(50, legendY + 70, 'PK = مفتاح أساسي (Primary Key)', '11', 'normal', '#666');
+        createText(50, legendY + 85, 'M = عديد | 1 = واحد', '11', 'normal', '#666');
+
+        createText(50, legendY + 110, 'العلاقات الرئيسية:', '11', 'bold', '#333');
+        createText(50, legendY + 128, '• Users → Calculations (مستخدم واحد له عدة حسابات)', '10', 'normal', '#666');
+        createText(50, legendY + 143, '• Calculations → Results (حساب واحد له عدة نتائج)', '10', 'normal', '#666');
+        createText(50, legendY + 158, '• Results → Reports (نتيجة واحدة لها عدة تقارير)', '10', 'normal', '#666');
+        createText(50, legendY + 173, '• Reports → Charts (تقرير واحد له عدة رسوم بيانية)', '10', 'normal', '#666');
+
+        createText(50, legendY + 200, 'قاعدة البيانات تتبع نموذج التطبيع لضمان سلامة البيانات', '10', 'normal', '#999');
+
+        function downloadSVG() {
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const link = document.createElement('a');
+            link.href = 'data:image/svg+xml;base64,' + btoa(svgData);
+            link.download = 'ERD_نقطة_التعادل.svg';
+            link.click();
+        }
+
+        function downloadPNG() {
+            // Get the SVG element and its parent container
+            const svgElement = document.getElementById('canvas');
+            const container = document.querySelector('.container');
+            
+            // Create a temporary wrapper for just the SVG with white background
+            const wrapper = document.createElement('div');
+            wrapper.style.backgroundColor = 'white';
+            wrapper.style.padding = '30px';
+            wrapper.style.borderRadius = '15px';
+            
+            // Clone the SVG to avoid modifying the original
+            const clonedSvg = svgElement.cloneNode(true);
+            wrapper.appendChild(clonedSvg);
+            
+            // Temporarily add to DOM for rendering
+            document.body.appendChild(wrapper);
+            
+            // Use html2canvas to convert to image
+            html2canvas(wrapper, {
+                backgroundColor: '#ffffff',
+                scale: 2,
+                allowTaint: true,
+                useCORS: true,
+                logging: false
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL('image/png');
+                link.download = 'ERD_نقطة_التعادل.png';
+                link.click();
+                
+                // Remove temporary wrapper
+                document.body.removeChild(wrapper);
+            }).catch(err => {
+                console.error('خطأ في تحميل الصورة:', err);
+                document.body.removeChild(wrapper);
+                alert('عذراً، حدث خطأ في تحميل الصورة. يرجى المحاولة مجدداً.');
+            });
+        }
+
+        function downloadHTML() {
+            const htmlContent = document.documentElement.outerHTML;
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'ERD_نقطة_التعادل.html';
+            link.click();
+        }
+    </script>
+</body>
+</html>

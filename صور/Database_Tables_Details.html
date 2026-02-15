@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Tables Details - حاسبة نقطة التعادل</title>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 850px;
+            margin: 0 auto;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.3rem;
+        }
+        
+        .tables-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .table-card {
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .table-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+            font-size: 1.3rem;
+            text-align: center;
+        }
+        
+        .table-header.users {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        }
+        
+        .table-header.calculations {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+        }
+        
+        .table-header.results {
+            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+        }
+        
+        .table-header.reports {
+            background: linear-gradient(135deg, #F44336 0%, #E53935 100%);
+        }
+        
+        .table-header.charts {
+            background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
+        }
+        
+        .table-body {
+            padding: 15px;
+        }
+        
+        .field {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: #f5f5f5;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .field-type {
+            display: inline-block;
+            padding: 3px 8px;
+            background: #667eea;
+            color: white;
+            border-radius: 3px;
+            font-size: 1rem;
+            margin-left: 10px;
+            font-weight: bold;
+        }
+        
+        .field-name {
+            font-weight: bold;
+            color: #333;
+            flex-grow: 1;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            margin-right: 5px;
+            border-radius: 3px;
+            font-size: 1.05rem;
+            font-weight: bold;
+        }
+        
+        .badge-pk {
+            background: #FFD700;
+            color: #333;
+        }
+        
+        .badge-fk {
+            background: #87CEEB;
+            color: #333;
+        }
+        
+        .badge-required {
+            background: #FF6B6B;
+            color: white;
+        }
+        
+        .field-comment {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+            padding-top: 5px;
+            border-top: 1px solid #ddd;
+            display: block;
+        }
+        
+        .relationships {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f0f0f0;
+            border-radius: 10px;
+        }
+        
+        .relationships h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .relationship-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            background: white;
+            border-left: 4px solid #667eea;
+            border-radius: 5px;
+        }
+        
+        .relationship-item strong {
+            color: #667eea;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .download-menu {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 200px;
+            box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+            padding: 12px 16px;
+            z-index: 1;
+            border-radius: 8px;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 10px;
+        }
+        
+        .dropdown-content button {
+            display: block;
+            width: 100%;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            text-align: right;
+            transition: all 0.3s ease;
+        }
+        
+        .dropdown-content button:last-child {
+            margin-bottom: 0;
+        }
+        
+        .dropdown-content button:hover {
+            background: #5568d3;
+        }
+        
+        .download-menu:hover .dropdown-content {
+            display: block;
+        }
+        
+        @media print {
+            body {
+                background: white;
+            }
+            .btn-group {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗄️ تفاصيل جداول قاعدة البيانات</h1>
+        <p class="subtitle">Database Tables Details</p>
+        
+        <div id="content" class="tables-grid">
+            <!-- Will be generated by JavaScript -->
+        </div>
+        
+        <div class="relationships">
+            <h3>🔗 العلاقات بين الجداول</h3>
+            <div class="relationship-item">
+                <strong>Users (1) → (M) Calculations</strong><br>
+                كل مستخدم يمكن أن يكون لديه عدة حسابات
+            </div>
+            <div class="relationship-item">
+                <strong>Calculations (1) → (M) Results</strong><br>
+                كل حساب ينتج واحد أو عدة نتائج
+            </div>
+            <div class="relationship-item">
+                <strong>Results (1) → (M) Reports</strong><br>
+                كل نتيجة تنتج واحد أو عدة تقارير
+            </div>
+            <div class="relationship-item">
+                <strong>Reports (M) ↔ (M) Charts</strong><br>
+                كل تقرير يمكن أن يحتوي على عدة رسوم بيانية
+            </div>
+        </div>
+        
+        <div class="btn-group">
+            <div class="download-menu">
+                <button class="btn-primary">📥 تحميل الجداول</button>
+                <div class="dropdown-content">
+                    <button onclick="downloadPNG()">📷 تحميل كصورة PNG</button>
+                    <button onclick="downloadHTML()">📋 تحميل كملف HTML</button>
+                </div>
+            </div>
+            <button class="btn-primary" onclick="window.print()">🖨️ طباعة</button>
+        </div>
+    </div>
+
+    <script>
+        const tablesData = [
+            {
+                name: 'Users',
+                class: 'users',
+                icon: '👤',
+                fields: [
+                    { name: 'UserID', type: 'INT', pk: true, required: true, comment: 'معرف فريد للمستخدم' },
+                    { name: 'Name', type: 'VARCHAR(100)', required: true, comment: 'اسم المستخدم الكامل' },
+                    { name: 'Email', type: 'VARCHAR(100)', required: true, comment: 'البريد الإلكتروني الفريد' },
+                    { name: 'Password', type: 'VARCHAR(255)', required: true, comment: 'كلمة المرور المشفرة' },
+                    { name: 'CreatedAt', type: 'DATETIME', required: true, comment: 'تاريخ إنشاء الحساب' },
+                    { name: 'UpdatedAt', type: 'DATETIME', comment: 'آخر تحديث للحساب' }
+                ]
+            },
+            {
+                name: 'Calculations',
+                class: 'calculations',
+                icon: '🧮',
+                fields: [
+                    { name: 'CalcID', type: 'INT', pk: true, required: true, comment: 'معرف فريد للحساب' },
+                    { name: 'UserID', type: 'INT', fk: true, required: true, comment: 'مرجع للمستخدم' },
+                    { name: 'FixedCost', type: 'DECIMAL(10,2)', required: true, comment: 'التكاليف الثابتة' },
+                    { name: 'VariableCost', type: 'DECIMAL(10,2)', required: true, comment: 'التكلفة المتغيرة للوحدة' },
+                    { name: 'Price', type: 'DECIMAL(10,2)', required: true, comment: 'سعر البيع للوحدة' },
+                    { name: 'CreatedAt', type: 'DATETIME', required: true, comment: 'تاريخ الحساب' },
+                    { name: 'Currency', type: 'VARCHAR(3)', comment: 'العملة المستخدمة' }
+                ]
+            },
+            {
+                name: 'Results',
+                class: 'results',
+                icon: '📈',
+                fields: [
+                    { name: 'ResultID', type: 'INT', pk: true, required: true, comment: 'معرف فريد للنتيجة' },
+                    { name: 'CalcID', type: 'INT', fk: true, required: true, comment: 'مرجع للحساب' },
+                    { name: 'BEP_Units', type: 'DECIMAL(10,2)', required: true, comment: 'نقطة التعادل بالوحدات' },
+                    { name: 'BEP_Revenue', type: 'DECIMAL(12,2)', required: true, comment: 'نقطة التعادل بالإيرادات' },
+                    { name: 'Profit_Loss', type: 'DECIMAL(12,2)', comment: 'الربح أو الخسارة' },
+                    { name: 'CalculatedAt', type: 'DATETIME', required: true, comment: 'تاريخ الحساب' }
+                ]
+            },
+            {
+                name: 'Reports',
+                class: 'reports',
+                icon: '📋',
+                fields: [
+                    { name: 'ReportID', type: 'INT', pk: true, required: true, comment: 'معرف فريد للتقرير' },
+                    { name: 'ResultID', type: 'INT', fk: true, required: true, comment: 'مرجع للنتيجة' },
+                    { name: 'ReportName', type: 'VARCHAR(150)', required: true, comment: 'اسم التقرير' },
+                    { name: 'Content', type: 'LONGTEXT', comment: 'محتوى التقرير التفصيلي' },
+                    { name: 'Format', type: 'VARCHAR(20)', comment: 'صيغة التقرير (PDF، Excel)' },
+                    { name: 'GeneratedAt', type: 'DATETIME', required: true, comment: 'تاريخ إنشاء التقرير' }
+                ]
+            },
+            {
+                name: 'Charts',
+                class: 'charts',
+                icon: '📊',
+                fields: [
+                    { name: 'ChartID', type: 'INT', pk: true, required: true, comment: 'معرف فريد للرسم' },
+                    { name: 'ReportID', type: 'INT', fk: true, required: true, comment: 'مرجع للتقرير' },
+                    { name: 'ChartType', type: 'VARCHAR(50)', required: true, comment: 'نوع الرسم (Line, Bar, Pie)' },
+                    { name: 'Title', type: 'VARCHAR(100)', comment: 'عنوان الرسم البياني' },
+                    { name: 'ImageData', type: 'LONGBLOB', comment: 'بيانات الصورة المشفرة' },
+                    { name: 'CreatedAt', type: 'DATETIME', required: true, comment: 'تاريخ إنشاء الرسم' }
+                ]
+            }
+        ];
+
+        const content = document.getElementById('content');
+        
+        tablesData.forEach(table => {
+            const card = document.createElement('div');
+            card.className = 'table-card';
+            
+            let html = `
+                <div class="table-header ${table.class}">
+                    ${table.icon} ${table.name}
+                </div>
+                <div class="table-body">
+            `;
+            
+            table.fields.forEach(field => {
+                html += `
+                    <div class="field">
+                        <div style="flex-grow: 1;">
+                            <div class="field-name">
+                                ${field.pk ? '<span class="badge badge-pk">PK</span>' : ''}
+                                ${field.fk ? '<span class="badge badge-fk">FK</span>' : ''}
+                                ${field.required ? '<span class="badge badge-required">مطلوب</span>' : ''}
+                                ${field.name}
+                            </div>
+                            ${field.comment ? `<span class="field-comment">📝 ${field.comment}</span>` : ''}
+                        </div>
+                        <span class="field-type">${field.type}</span>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+            card.innerHTML = html;
+            content.appendChild(card);
+        });
+
+        function downloadPNG() {
+            const wrapper = document.createElement('div');
+            wrapper.style.backgroundColor = 'white';
+            wrapper.style.padding = '30px';
+            wrapper.style.borderRadius = '15px';
+            wrapper.style.width = '1400px';
+            
+            // Clone the container
+            const cloned = document.querySelector('.container').cloneNode(true);
+            cloned.style.maxHeight = 'none';
+            cloned.style.overflow = 'visible';
+            cloned.style.backgroundColor = 'transparent';
+            cloned.style.boxShadow = 'none';
+            cloned.style.padding = '0';
+            cloned.querySelector('.btn-group').style.display = 'none';
+            
+            wrapper.appendChild(cloned);
+            document.body.appendChild(wrapper);
+            
+            html2canvas(wrapper, {
+                backgroundColor: '#ffffff',
+                scale: 2,
+                allowTaint: true,
+                useCORS: true,
+                logging: false,
+                width: 1400
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL('image/png');
+                link.download = 'Database_Tables_Details.png';
+                link.click();
+                
+                document.body.removeChild(wrapper);
+            }).catch(err => {
+                console.error('خطأ في تحميل الصورة:', err);
+                document.body.removeChild(wrapper);
+                alert('عذراً، حدث خطأ في تحميل الصورة. يرجى المحاولة مجدداً.');
+            });
+        }
+
+        function downloadHTML() {
+            const htmlContent = document.documentElement.outerHTML;
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'Database_Tables_Details.html';
+            link.click();
+        }
+    </script>
+</body>
+</html>

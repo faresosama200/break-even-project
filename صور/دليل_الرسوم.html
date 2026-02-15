@@ -1,0 +1,330 @@
+<!-- DFD - Data Flow Diagram Guide -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دليل الرسوم التخطيطية - حاسبة نقطة التعادل</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 50px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            text-align: center;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.2rem;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            border-right: 4px solid #667eea;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+        }
+        
+        .file-list {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .file-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #f77f00;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .file-name {
+            font-weight: bold;
+            color: #333;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        
+        .file-desc {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .link-btn {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 8px 15px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .link-btn:hover {
+            background: #5568d3;
+            text-decoration: none;
+        }
+        
+        .process-box {
+            background: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #06a77d;
+        }
+        
+        .process-box h3 {
+            color: #06a77d;
+            margin-bottom: 10px;
+        }
+        
+        .process-box p {
+            color: #555;
+            line-height: 1.8;
+        }
+        
+        .pros-cons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .pros, .cons {
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .pros {
+            background: #e8f5e9;
+            border-left: 4px solid #06a77d;
+        }
+        
+        .cons {
+            background: #ffebee;
+            border-left: 4px solid #d62828;
+        }
+        
+        .pros h4, .cons h4 {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        ul {
+            margin-right: 20px;
+            color: #555;
+            line-height: 1.8;
+        }
+        
+        .center-text {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            .pros-cons {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 دليل الرسوم التخطيطية</h1>
+        <p class="subtitle">Data Flow Diagrams - حاسبة نقطة التعادل</p>
+        
+        <div class="section">
+            <h2>🎯 نبذة عن المشروع</h2>
+            <p>هذا المشروع هو <strong>حاسبة نقطة التعادل</strong> (Break-Even Point Calculator)، وهي أداة مالية تساعد في حساب النقطة التي يتساوى فيها الإيراد مع التكاليف، أي عندما لا يكون هناك ربح ولا خسارة.</p>
+            
+            <div class="process-box">
+                <h3>📐 معادلة نقطة التعادل:</h3>
+                <p dir="ltr" style="font-family: 'Courier New', monospace; font-size: 1.1rem;">
+                    <strong>BEP (Units) = Fixed Costs ÷ (Price per Unit - Variable Cost per Unit)</strong>
+                </p>
+                <p>أو بالعربية: <br>
+                <strong>نقطة التعادل (الوحدات) = التكاليف الثابتة ÷ (السعر للوحدة - التكلفة المتغيرة للوحدة)</strong></p>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📁 محتويات مجلد الصور</h2>
+            <p>يحتوي هذا المجلد على رسوم تخطيطية توضح تدفق البيانات في المشروع:</p>
+            
+            <div class="file-list">
+                <div class="file-item">
+                    <div class="file-name">📄 DFD_المشروع.html</div>
+                    <div class="file-desc">
+                        رسم تخطيطي شامل بصيغة Mermaid يوضح تدفق البيانات من المستخدم عبر النظام مع الشرح التفصيلي لكل مكون.
+                    </div>
+                    <a href="DFD_المشروع.html" class="link-btn">🔍 عرض الرسم</a>
+                </div>
+                
+                <div class="file-item">
+                    <div class="file-name">📄 DFD_مفصل.html</div>
+                    <div class="file-desc">
+                        رسم مفصل يعرض جميع العمليات والمكونات بشكل تفاعلي مع الرموز المعتمدة عالمياً للنظم (DFD Level 0) مع إمكانية التحميل كصورة PNG.
+                    </div>
+                    <a href="DFD_مفصل.html" class="link-btn">🔍 عرض الرسم</a>
+                </div>
+                
+                <div class="file-item">
+                    <div class="file-name">📄 دليل_الرسوم.html</div>
+                    <div class="file-desc">
+                        هذا الملف يوفر شرحاً شاملاً لجميع الرسوم التخطيطية وكيفية استخدامها.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🔄 مكونات تدفق البيانات الرئيسية</h2>
+            
+            <div class="process-box">
+                <h3>1️⃣ كيانات خارجية (External Entities)</h3>
+                <p>وهي الأطراف التي تتفاعل مع النظام من الخارج:</p>
+                <ul>
+                    <li><strong>المستخدم (User):</strong> الشخص الذي يستخدم الحاسبة بإدخال البيانات والحصول على النتائج</li>
+                </ul>
+            </div>
+            
+            <div class="process-box">
+                <h3>2️⃣ العمليات (Processes)</h3>
+                <p>وهي المعالجات التي يقوم بها النظام:</p>
+                <ul>
+                    <li><strong>P1 - إدخال البيانات:</strong> استقبال المتغيرات من المستخدم (التكاليف الثابتة، التكاليف المتغيرة، السعر)</li>
+                    <li><strong>P2 - العمليات الحسابية:</strong> حساب نقطة التعادل وفقاً للمعادلة الرياضية</li>
+                    <li><strong>P3 - تحليل البيانات:</strong> معالجة النتائج وإنشاء الرسوم البيانية والتحليلات</li>
+                    <li><strong>P4 - إنشاء التقارير:</strong> تجميع النتائج في تقارير شاملة</li>
+                </ul>
+            </div>
+            
+            <div class="process-box">
+                <h3>3️⃣ مخازن البيانات (Data Stores)</h3>
+                <p>المكان الذي يتم فيه تخزين واسترجاع البيانات:</p>
+                <ul>
+                    <li><strong>D1 - قاعدة البيانات:</strong> تخزين بيانات المستخدمين والحسابات السابقة والنتائج</li>
+                </ul>
+            </div>
+            
+            <div class="process-box">
+                <h3>4️⃣ تدفقات البيانات (Data Flows)</h3>
+                <p>حركة البيانات بين المكونات المختلفة:</p>
+                <ul>
+                    <li>تدفق المدخلات من المستخدم إلى عمليات الإدخال</li>
+                    <li>تدفق البيانات المعالجة بين العمليات المختلفة</li>
+                    <li>تدفق البيانات من وإلى قاعدة البيانات</li>
+                    <li>تدفق النتائج النهائية إلى المستخدم</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📊 مقارنة بين الرسومات المتوفرة</h2>
+            
+            <div class="pros-cons">
+                <div class="pros">
+                    <h4>✅ DFD_المشروع.html</h4>
+                    <ul>
+                        <li>رسم تفاعلي وديناميكي</li>
+                        <li>شرح تفصيلي لكل مكون</li>
+                        <li>سهل القراءة والفهم</li>
+                        <li>يحتوي على وسيلة إيضاح شاملة</li>
+                    </ul>
+                </div>
+                <div class="cons">
+                    <h4>✅ DFD_مفصل.html</h4>
+                    <ul>
+                        <li>رسم يتبع المعايير الدولية</li>
+                        <li>يمكن تحويله لصورة PNG</li>
+                        <li>تفاصيل عددية لكل عملية</li>
+                        <li>مناسب للتقارير الرسمية</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>💡 نصائح الاستخدام</h2>
+            <ul style="margin-right: 20px; color: #555; line-height: 2;">
+                <li>🖥️ يمكن فتح الملفات HTML في أي متصفح ويب (Chrome, Firefox, Safari, Edge)</li>
+                <li>🖨️ استخدم خاصية الطباعة (Ctrl+P) لحفظ الرسم كملف PDF</li>
+                <li>📥 استخدم زر التحميل في DFD_مفصل.html لتحميل الرسم كصورة PNG</li>
+                <li>📱 الرسوم متوافقة مع الأجهزة المحمولة والشاشات المختلفة</li>
+                <li>🎨 يمكن تعديل الألوان والأحجام مباشرة من كود HTML</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>🎓 مراجع ومعلومات إضافية</h2>
+            <div class="process-box">
+                <h3>ما هو DFD؟</h3>
+                <p>
+                    Data Flow Diagram (DFD) هو رسم توضيحي يمثل تدفق المعلومات والبيانات عبر النظام. 
+                    يُستخدم في مرحلة التحليل والتصميم لتوضيح العمليات والمستودعات والكيانات الخارجية 
+                    وكيفية تفاعلها مع بعضها البعض.
+                </p>
+            </div>
+            
+            <div class="process-box">
+                <h3>مستويات DFD:</h3>
+                <ul>
+                    <li><strong>Context Diagram (Level 0):</strong> رسم عام يوضح النظام ككل والكيانات الخارجية المتفاعلة معه</li>
+                    <li><strong>Level 1:</strong> تفصيل العمليات الرئيسية في النظام</li>
+                    <li><strong>Level 2+:</strong> تفاصيل أكثر للعمليات الفرعية</li>
+                </ul>
+                <p><strong>ملاحظة:</strong> الرسوم المتوفرة تمثل Level 0 (النظام ككل)</p>
+            </div>
+        </div>
+        
+        <div class="center-text">
+            <p><strong>تم إنشاء هذه الرسوم التخطيطية لمشروع: حاسبة نقطة التعادل</strong></p>
+            <p>تاريخ الإنشاء: 2026</p>
+        </div>
+    </div>
+</body>
+</html>
