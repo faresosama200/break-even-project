@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% block title %}Report — {{ project.name }}{% endblock %}
+{% block extra_css %}
+<style>
+@media print {
+    .navbar, .footer, .no-print, .header-actions { display: none !important; }
+    .card { break-inside: avoid; box-shadow: none; border: 1px solid #ddd; }
+    body { font-size: 12px; }
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h1><i class="fas fa-file-alt"></i> Analysis Report</h1>
+            <p class="text-muted">{{ project.name }} — Generated {{ project.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
+        </div>
+        <div class="header-actions no-print">
+            <button onclick="window.print()" class="btn btn-outline"><i class="fas fa-print"></i> Print</button>
+            <a href="{{ url_for('reports.report_data_api', project_id=project.id) }}"
+               class="btn btn-outline" download="report_{{ project.id }}.json">
+                <i class="fas fa-download"></i> Download JSON
+            </a>
+            <a href="{{ url_for('projects.detail', project_id=project.id) }}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    {% if analysis %}
+    <!-- Executive Summary -->
+    <div class="card">
+        <div class="card-header"><h2><i class="fas fa-clipboard-list"></i> Executive Summary</h2></div>
+        <div class="card-body">
+            <div class="report-summary-grid">
+                <div class="summary-item">
+                    <label>Project</label>
+                    <span>{{ project.name }}</span>
+                </div>
+                <div class="summary-item">
+                    <label>Industry</label>
+                    <span>{{ project.industry or 'General' }}</span>
+                </div>
+                <div class="summary-item">
+                    <label>Break-Even Point</label>
+                    <span>{{ '{:,.0f}'.format(analysis.break_even_units) }} units ({{ project.currency }} {{ '{:,.0f}'.format(analysis.break_even_revenue) }})</span>
+                </div>
+                <div class="summary-item">
+                    <label>Expected Profit</label>
+                    <span class="{{ 'text-success' if analysis.expected_profit >= 0 else 'text-danger' }}">
+                        {{ project.currency }} {{ '{:,.2f}'.format(analysis.expected_profit or 0) }}
+                    </span>
+                </div>
+                <div class="summary-item">
+                    <label>Profit Margin</label>
+                    <span>{{ '{:.1f}'.format(analysis.profit_margin or 0) }}%</span>
+                </div>
+                <div class="summary-item">
+                    <label>ROI</label>
+                    <span>{{ '{:.1f}'.format(analysis.roi_percentage or 0) }}%</span>
+                </div>
+                <div class="summary-item">
+                    <label>Risk Level</label>
+                    <span class="risk-{{ analysis.risk_level }}">{{ analysis.risk_level | upper }} ({{ analysis.risk_score }})</span>
+                </div>
+                <div class="summary-item">
+                    <label>Feasibility</label>
+                    <span>{{ analysis.feasibility_score }}/100</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Input Data -->
+    <div class="card">
+        <div class="card-header"><h2><i class="fas fa-database"></i> Financial Inputs</h2></div>
+        <div class="card-body">
+            {% if fin_input %}
+            <table class="table">
+                <tr><td>Fixed Costs</td><td>{{ project.currency }} {{ '{:,.2f}'.format(fin_input.fixed_costs) }}</td></tr>
+                <tr><td>Variable Cost / Unit</td><td>{{ project.currency }} {{ '{:,.2f}'.format(fin_input.variable_cost_per_unit) }}</td></tr>
+                <tr><td>Selling Price / Unit</td><td>{{ project.currency }} {{ '{:,.2f}'.format(fin_input.selling_price_per_unit) }}</td></tr>
+                <tr><td>Expected Production Volume</td><td>{{ '{:,}'.format(fin_input.expected_production_volume) }} units</td></tr>
+                <tr><td>Initial Investment</td><td>{{ project.currency }} {{ '{:,.2f}'.format(fin_input.initial_investment or 0) }}</td></tr>
+                <tr><td>Time Horizon</td><td>{{ fin_input.time_horizon_months }} months</td></tr>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Detailed Analysis -->
+    <div class="card">
+        <div class="card-header"><h2><i class="fas fa-chart-bar"></i> Detailed Analysis</h2></div>
+        <div class="card-body">
+            <table class="table">
+                <tr><td>Break-Even Units</td><td>{{ '{:,.2f}'.format(analysis.break_even_units) }}</td></tr>
+                <tr><td>Break-Even Revenue</td><td>{{ project.currency }} {{ '{:,.2f}'.format(analysis.break_even_revenue) }}</td></tr>
+                <tr><td>Contribution Margin</td><td>{{ project.currency }} {{ '{:,.2f}'.format(analysis.contribution_margin) }}</td></tr>
+                <tr><td>Contribution Margin Ratio</td><td>{{ '{:.1%}'.format(analysis.contribution_margin_ratio) }}</td></tr>
+                <tr><td>Expected Revenue</td><td>{{ project.currency }} {{ '{:,.2f}'.format(analysis.expected_revenue or 0) }}</td></tr>
+                <tr><td>Expected Profit</td><td>{{ project.currency }} {{ '{:,.2f}'.format(analysis.expected_profit or 0) }}</td></tr>
+                <tr><td>Profit Margin</td><td>{{ '{:.1f}'.format(analysis.profit_margin or 0) }}%</td></tr>
+                <tr><td>ROI</td><td>{{ '{:.1f}'.format(analysis.roi_percentage or 0) }}%</td></tr>
+                <tr><td>Safety Margin</td><td>{{ '{:,.2f}'.format(analysis.safety_margin or 0) }} units ({{ '{:.1f}'.format(analysis.safety_margin_percentage or 0) }}%)</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- Predictions -->
+    {% if predictions %}
+    <div class="card">
+        <div class="card-header"><h2><i class="fas fa-crystal-ball"></i> Predictions</h2></div>
+        <div class="card-body">
+            {% for pred in predictions %}
+            <div class="prediction-item">
+                <strong>{{ pred.prediction_type | replace('_', ' ') | title }}</strong>
+                <span>Value: {{ '{:,.2f}'.format(pred.predicted_value) }}</span>
+                {% if pred.confidence_score %}
+                <span class="text-muted">(Confidence: {{ '{:.0%}'.format(pred.confidence_score) }})</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recommendations -->
+    {% if recommendations %}
+    <div class="card">
+        <div class="card-header"><h2><i class="fas fa-lightbulb"></i> Recommendations</h2></div>
+        <div class="card-body">
+            <div class="recommendations-list">
+                {% for rec in recommendations %}
+                <div class="rec-item rec-{{ rec.priority }}">
+                    <div class="rec-header">
+                        <span class="rec-badge badge-{{ rec.priority }}">{{ rec.priority | upper }}</span>
+                        <span class="rec-category">{{ rec.category | replace('_', ' ') | title }}</span>
+                    </div>
+                    <h4>{{ rec.title }}</h4>
+                    <p>{{ rec.description }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Charts -->
+    <div class="card no-print">
+        <div class="card-header"><h2><i class="fas fa-chart-area"></i> Visual Analysis</h2></div>
+        <div class="card-body">
+            <canvas id="reportChart" height="300"></canvas>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const historical = {{ historical_data | safe }};
+    if (historical && historical.length > 1) {
+        new Chart(document.getElementById('reportChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: historical.map(h => h.date),
+                datasets: [
+                    { label: 'Fixed Costs', data: historical.map(h => h.fixed_costs), borderColor: '#ef4444', fill: false },
+                    { label: 'Variable Cost/Unit', data: historical.map(h => h.variable_cost), borderColor: '#f59e0b', fill: false },
+                    { label: 'Selling Price/Unit', data: historical.map(h => h.selling_price), borderColor: '#10b981', fill: false },
+                ]
+            },
+            options: { responsive: true, plugins: { title: { display: true, text: 'Input History' } } }
+        });
+    }
+});
+</script>
+{% endblock %}

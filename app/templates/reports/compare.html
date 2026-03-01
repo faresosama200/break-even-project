@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Compare Projects{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1><i class="fas fa-columns"></i> Project Comparison</h1>
+    </div>
+
+    {% if comparison %}
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Project</th>
+                    <th>Industry</th>
+                    <th>BEP (units)</th>
+                    <th>Profit</th>
+                    <th>Margin %</th>
+                    <th>ROI %</th>
+                    <th>Risk</th>
+                    <th>Feasibility</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in comparison %}
+                <tr>
+                    <td><a href="{{ url_for('projects.detail', project_id=c.id) }}">{{ c.name }}</a></td>
+                    <td>{{ c.industry }}</td>
+                    <td>{{ '{:,.0f}'.format(c.bep_units) }}</td>
+                    <td class="{{ 'text-success' if c.profit >= 0 else 'text-danger' }}">
+                        {{ '{:,.0f}'.format(c.profit) }}
+                    </td>
+                    <td>{{ '{:.1f}'.format(c.profit_margin or 0) }}%</td>
+                    <td>{{ '{:.1f}'.format(c.roi or 0) }}%</td>
+                    <td><span class="badge risk-{{ c.risk_level }}">{{ c.risk_level }}</span></td>
+                    <td>{{ c.feasibility }}/100</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Comparison Charts -->
+    <div class="dashboard-grid">
+        <div class="card">
+            <div class="card-header"><h2>Profit Comparison</h2></div>
+            <div class="card-body">
+                <canvas id="profitCompare" height="250"></canvas>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header"><h2>Feasibility Comparison</h2></div>
+            <div class="card-body">
+                <canvas id="feasCompare" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state-large">
+        <i class="fas fa-balance-scale"></i>
+        <h2>Nothing to Compare</h2>
+        <p>Create and analyze at least two projects to compare them.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const data = {{ comparison_json | safe if comparison else '[]' }};
+    if (!data.length) return;
+
+    // Profit comparison bar chart
+    new Chart(document.getElementById('profitCompare').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: data.map(d => d.name),
+            datasets: [{
+                label: 'Expected Profit',
+                data: data.map(d => d.profit),
+                backgroundColor: data.map(d => d.profit >= 0 ? '#10b981' : '#ef4444'),
+                borderRadius: 6,
+            }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } } }
+    });
+
+    // Feasibility radar/bar
+    new Chart(document.getElementById('feasCompare').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: data.map(d => d.name),
+            datasets: [{
+                label: 'Feasibility Score',
+                data: data.map(d => d.feasibility),
+                backgroundColor: '#6366f1',
+                borderRadius: 6,
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { min: 0, max: 100 } },
+            plugins: { legend: { display: false } }
+        }
+    });
+});
+</script>
+{% endblock %}

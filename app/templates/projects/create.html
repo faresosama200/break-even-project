@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+{% block title %}New Project{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1><i class="fas fa-plus-circle"></i> New Feasibility Analysis</h1>
+    </div>
+
+    <form method="POST" class="project-form" novalidate id="projectForm">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <!-- Project Info -->
+        <div class="card">
+            <div class="card-header"><h2><i class="fas fa-info-circle"></i> Project Information</h2></div>
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">Project Name *</label>
+                        <input type="text" id="name" name="name" class="form-control"
+                               value="{{ form.get('name', '') }}" required placeholder="e.g. Organic Soap Production">
+                    </div>
+                    <div class="form-group">
+                        <label for="industry">Industry</label>
+                        <select id="industry" name="industry" class="form-control">
+                            <option value="">Select industry...</option>
+                            {% for ind in ['Manufacturing', 'Food & Beverage', 'Technology', 'Retail',
+                                            'Services', 'Agriculture', 'Handcraft', 'E-commerce', 'Other'] %}
+                            <option value="{{ ind }}" {{ 'selected' if form.get('industry') == ind }}>{{ ind }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description" class="form-control" rows="3"
+                                  placeholder="Brief project description...">{{ form.get('description', '') }}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="currency">Currency</label>
+                        <select id="currency" name="currency" class="form-control">
+                            {% for c in ['USD', 'EUR', 'GBP', 'SAR', 'AED', 'EGP', 'IQD'] %}
+                            <option value="{{ c }}" {{ 'selected' if form.get('currency', 'USD') == c }}>{{ c }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Inputs -->
+        <div class="card">
+            <div class="card-header"><h2><i class="fas fa-calculator"></i> Financial Data</h2></div>
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="fixed_costs">Fixed Costs *</label>
+                        <input type="number" id="fixed_costs" name="fixed_costs" class="form-control"
+                               value="{{ form.get('fixed_costs', '') }}" required min="0" step="0.01"
+                               placeholder="e.g. 50000">
+                        <small class="form-help">Total fixed costs (rent, salaries, equipment, etc.)</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="variable_cost_per_unit">Variable Cost / Unit *</label>
+                        <input type="number" id="variable_cost_per_unit" name="variable_cost_per_unit"
+                               class="form-control" value="{{ form.get('variable_cost_per_unit', '') }}"
+                               required min="0" step="0.01" placeholder="e.g. 15.00">
+                        <small class="form-help">Cost per unit (materials, labor per unit)</small>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="selling_price_per_unit">Selling Price / Unit *</label>
+                        <input type="number" id="selling_price_per_unit" name="selling_price_per_unit"
+                               class="form-control" value="{{ form.get('selling_price_per_unit', '') }}"
+                               required min="0" step="0.01" placeholder="e.g. 35.00">
+                        <small class="form-help">Your selling price per unit</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="expected_production_volume">Expected Volume *</label>
+                        <input type="number" id="expected_production_volume" name="expected_production_volume"
+                               class="form-control" value="{{ form.get('expected_production_volume', '') }}"
+                               required min="1" step="1" placeholder="e.g. 5000">
+                        <small class="form-help">Expected total production/sales volume</small>
+                    </div>
+                </div>
+
+                <!-- Advanced Options Toggle -->
+                <div class="advanced-toggle">
+                    <button type="button" class="btn btn-outline btn-sm" id="toggleAdvanced">
+                        <i class="fas fa-sliders-h"></i> Advanced Options
+                    </button>
+                </div>
+                <div class="advanced-fields" id="advancedFields" style="display:none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="initial_investment">Initial Investment</label>
+                            <input type="number" id="initial_investment" name="initial_investment"
+                                   class="form-control" value="{{ form.get('initial_investment', '0') }}"
+                                   min="0" step="0.01" placeholder="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="monthly_overhead">Monthly Overhead</label>
+                            <input type="number" id="monthly_overhead" name="monthly_overhead"
+                                   class="form-control" value="{{ form.get('monthly_overhead', '0') }}"
+                                   min="0" step="0.01" placeholder="0">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="marketing_budget">Marketing Budget</label>
+                            <input type="number" id="marketing_budget" name="marketing_budget"
+                                   class="form-control" value="{{ form.get('marketing_budget', '0') }}"
+                                   min="0" step="0.01" placeholder="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="target_profit">Target Profit</label>
+                            <input type="number" id="target_profit" name="target_profit"
+                                   class="form-control" value="{{ form.get('target_profit', '0') }}"
+                                   min="0" step="0.01" placeholder="0">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="max-width:300px">
+                            <label for="time_horizon_months">Time Horizon (months)</label>
+                            <input type="number" id="time_horizon_months" name="time_horizon_months"
+                                   class="form-control" value="{{ form.get('time_horizon_months', '12') }}"
+                                   min="1" max="60" step="1">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Preview -->
+        <div class="card" id="previewCard">
+            <div class="card-header"><h2><i class="fas fa-eye"></i> Quick Preview</h2></div>
+            <div class="card-body">
+                <div class="preview-grid" id="livePreview">
+                    <div class="preview-item">
+                        <label>Contribution Margin</label>
+                        <span id="prevCM">—</span>
+                    </div>
+                    <div class="preview-item">
+                        <label>Break-Even (units)</label>
+                        <span id="prevBEP">—</span>
+                    </div>
+                    <div class="preview-item">
+                        <label>Expected Profit</label>
+                        <span id="prevProfit">—</span>
+                    </div>
+                    <div class="preview-item">
+                        <label>Profit Margin</label>
+                        <span id="prevMargin">—</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{{ url_for('projects.index') }}" class="btn btn-outline">Cancel</a>
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-rocket"></i> Analyze Project
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Advanced toggle
+    document.getElementById('toggleAdvanced').addEventListener('click', function() {
+        const fields = document.getElementById('advancedFields');
+        fields.style.display = fields.style.display === 'none' ? 'block' : 'none';
+        this.classList.toggle('active');
+    });
+
+    // Live preview
+    const inputs = ['fixed_costs', 'variable_cost_per_unit', 'selling_price_per_unit', 'expected_production_volume'];
+    inputs.forEach(id => {
+        document.getElementById(id).addEventListener('input', updatePreview);
+    });
+
+    function updatePreview() {
+        const fc = parseFloat(document.getElementById('fixed_costs').value) || 0;
+        const vc = parseFloat(document.getElementById('variable_cost_per_unit').value) || 0;
+        const sp = parseFloat(document.getElementById('selling_price_per_unit').value) || 0;
+        const vol = parseInt(document.getElementById('expected_production_volume').value) || 0;
+
+        const cm = sp - vc;
+        document.getElementById('prevCM').textContent = cm > 0 ? '$' + cm.toFixed(2) : '—';
+
+        const bep = cm > 0 ? (fc / cm) : null;
+        document.getElementById('prevBEP').textContent = bep ? Math.ceil(bep).toLocaleString() + ' units' : '—';
+
+        const revenue = sp * vol;
+        const profit = revenue - (fc + vc * vol);
+        document.getElementById('prevProfit').textContent = profit !== 0
+            ? (profit >= 0 ? '+' : '') + '$' + profit.toLocaleString(undefined, {maximumFractionDigits: 0})
+            : '—';
+        if (profit < 0) document.getElementById('prevProfit').classList.add('text-danger');
+        else document.getElementById('prevProfit').classList.remove('text-danger');
+
+        const margin = revenue > 0 ? (profit / revenue * 100) : 0;
+        document.getElementById('prevMargin').textContent = revenue > 0 ? margin.toFixed(1) + '%' : '—';
+    }
+
+    updatePreview();
+});
+</script>
+{% endblock %}

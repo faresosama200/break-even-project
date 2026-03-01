@@ -1,0 +1,38 @@
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+
+# Environment variables
+.env
+
+# Database
+data/breakeven.db
+
+# Logs
+data/*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Distribution
+dist/
+build/
+*.egg-info/
+
+# Instance folder
+instance/

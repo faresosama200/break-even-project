@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+{% block title %}{{ project.name }} — Analysis{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h1><i class="fas fa-project-diagram"></i> {{ project.name }}</h1>
+            <p class="text-muted">{{ project.industry or 'General' }} | {{ project.currency }} | {{ project.created_at.strftime('%Y-%m-%d') }}</p>
+        </div>
+        <div class="header-actions">
+            <a href="{{ url_for('projects.edit', project_id=project.id) }}" class="btn btn-outline">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a href="{{ url_for('reports.project_report', project_id=project.id) }}" class="btn btn-outline">
+                <i class="fas fa-file-alt"></i> Full Report
+            </a>
+        </div>
+    </div>
+
+    {% if analysis %}
+    <!-- Key Metrics -->
+    <div class="stats-grid stats-4">
+        <div class="stat-card">
+            <div class="stat-icon bg-primary"><i class="fas fa-bullseye"></i></div>
+            <div class="stat-info">
+                <h3>{{ '{:,.0f}'.format(analysis.break_even_units) }}</h3>
+                <p>Break-Even Units</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon {% if analysis.expected_profit >= 0 %}bg-success{% else %}bg-danger{% endif %}">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ '{:,.0f}'.format(analysis.expected_profit or 0) }}</h3>
+                <p>Expected Profit</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon bg-info"><i class="fas fa-percentage"></i></div>
+            <div class="stat-info">
+                <h3>{{ '{:.1f}'.format(analysis.profit_margin or 0) }}%</h3>
+                <p>Profit Margin</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon bg-{{ 'success' if analysis.risk_level == 'low' else 'warning' if analysis.risk_level == 'medium' else 'danger' }}">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="stat-info">
+                <h3 class="risk-{{ analysis.risk_level }}">{{ analysis.risk_level | upper }}</h3>
+                <p>Risk Level ({{ analysis.risk_score }})</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-grid">
+        <!-- Break-Even Chart -->
+        <div class="card card-large">
+            <div class="card-header"><h2><i class="fas fa-chart-area"></i> Cost vs Revenue</h2></div>
+            <div class="card-body">
+                <canvas id="breakEvenChart" height="300"></canvas>
+            </div>
+        </div>
+
+        <!-- Financial Summary -->
+        <div class="card">
+            <div class="card-header"><h2><i class="fas fa-calculator"></i> Financial Summary</h2></div>
+            <div class="card-body">
+                <table class="table table-compact">
+                    <tr><td>Fixed Costs</td><td class="text-right">{{ '{:,.2f}'.format(fin_input.fixed_costs) }}</td></tr>
+                    <tr><td>Variable Cost/Unit</td><td class="text-right">{{ '{:,.2f}'.format(fin_input.variable_cost_per_unit) }}</td></tr>
+                    <tr><td>Selling Price/Unit</td><td class="text-right">{{ '{:,.2f}'.format(fin_input.selling_price_per_unit) }}</td></tr>
+                    <tr><td>Expected Volume</td><td class="text-right">{{ '{:,}'.format(fin_input.expected_production_volume) }}</td></tr>
+                    <tr class="table-divider"><td>Contribution Margin</td><td class="text-right">{{ '{:,.2f}'.format(analysis.contribution_margin) }}</td></tr>
+                    <tr><td>CM Ratio</td><td class="text-right">{{ '{:.1%}'.format(analysis.contribution_margin_ratio) }}</td></tr>
+                    <tr><td>Break-Even Revenue</td><td class="text-right">{{ '{:,.2f}'.format(analysis.break_even_revenue) }}</td></tr>
+                    <tr><td>Expected Revenue</td><td class="text-right">{{ '{:,.2f}'.format(analysis.expected_revenue or 0) }}</td></tr>
+                    <tr class="table-divider"><td>ROI</td><td class="text-right">{{ '{:.1f}'.format(analysis.roi_percentage or 0) }}%</td></tr>
+                    <tr><td>Safety Margin</td><td class="text-right">{{ '{:.1f}'.format(analysis.safety_margin_percentage or 0) }}%</td></tr>
+                    <tr><td>Feasibility Score</td><td class="text-right"><strong>{{ analysis.feasibility_score }}/100</strong></td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Feasibility Gauge -->
+        <div class="card">
+            <div class="card-header"><h2><i class="fas fa-tachometer-alt"></i> Feasibility Score</h2></div>
+            <div class="card-body chart-center">
+                <canvas id="feasibilityGauge" height="200"></canvas>
+                <p class="gauge-label" id="feasibilityLabel"></p>
+            </div>
+        </div>
+
+        <!-- Risk Gauge -->
+        <div class="card">
+            <div class="card-header"><h2><i class="fas fa-exclamation-triangle"></i> Risk Indicator</h2></div>
+            <div class="card-body chart-center">
+                <canvas id="riskGauge" height="200"></canvas>
+                <p class="gauge-label" id="riskLabel"></p>
+            </div>
+        </div>
+
+        <!-- Profit Projection Chart -->
+        <div class="card card-large">
+            <div class="card-header"><h2><i class="fas fa-chart-line"></i> Monthly Profit Projection</h2></div>
+            <div class="card-body">
+                <canvas id="forecastChart" height="280"></canvas>
+            </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="card card-full">
+            <div class="card-header"><h2><i class="fas fa-lightbulb"></i> AI Recommendations</h2></div>
+            <div class="card-body">
+                {% if recommendations %}
+                <div class="recommendations-list">
+                    {% for rec in recommendations %}
+                    <div class="rec-item rec-{{ rec.priority }}">
+                        <div class="rec-header">
+                            <span class="rec-badge badge-{{ rec.priority }}">{{ rec.priority | upper }}</span>
+                            <span class="rec-category">{{ rec.category | replace('_', ' ') | title }}</span>
+                        </div>
+                        <h4>{{ rec.title }}</h4>
+                        <p>{{ rec.description }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">No recommendations generated.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state-large">
+        <i class="fas fa-exclamation-circle"></i>
+        <h2>No Analysis Available</h2>
+        <p>Financial data has not been analyzed yet.</p>
+        <a href="{{ url_for('projects.edit', project_id=project.id) }}" class="btn btn-primary">
+            <i class="fas fa-edit"></i> Edit & Analyze
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chartData = {{ chart_data | safe }};
+    const forecastRaw = {{ forecast | safe }};
+
+    // Theme-aware colors
+    const style = getComputedStyle(document.documentElement);
+    const textColor = style.getPropertyValue('--text-color').trim() || '#333';
+    const gridColor = style.getPropertyValue('--border-color').trim() || '#e5e7eb';
+
+    // Break-Even Chart
+    if (chartData && chartData.units) {
+        new Chart(document.getElementById('breakEvenChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: chartData.units,
+                datasets: [
+                    {
+                        label: 'Total Revenue',
+                        data: chartData.total_revenue,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16,185,129,0.1)',
+                        fill: false,
+                        tension: 0.1,
+                        borderWidth: 2,
+                    },
+                    {
+                        label: 'Total Cost',
+                        data: chartData.total_cost,
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239,68,68,0.1)',
+                        fill: false,
+                        tension: 0.1,
+                        borderWidth: 2,
+                    },
+                    {
+                        label: 'Profit',
+                        data: chartData.profit,
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99,102,241,0.15)',
+                        fill: true,
+                        tension: 0.1,
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                interaction: { mode: 'index', intersect: false },
+                scales: {
+                    x: { title: { display: true, text: 'Units' }, grid: { color: gridColor } },
+                    y: { title: { display: true, text: 'Amount ($)' }, grid: { color: gridColor } }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString()
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Feasibility Gauge
+    const feasScore = {{ analysis.feasibility_score if analysis else 0 }};
+    drawGauge('feasibilityGauge', 'feasibilityLabel', feasScore, 100,
+              ['#ef4444','#f97316','#f59e0b','#10b981'],
+              ['Not Feasible','Marginal','Feasible','Highly Feasible']);
+
+    // Risk Gauge
+    const riskScore = {{ analysis.risk_score if analysis else 0 }};
+    drawGauge('riskGauge', 'riskLabel', riskScore, 100,
+              ['#10b981','#f59e0b','#f97316','#ef4444'],
+              ['Low Risk','Medium','High','Critical']);
+
+    function drawGauge(canvasId, labelId, value, max, colors, labels) {
+        const idx = value < 25 ? 0 : value < 50 ? 1 : value < 75 ? 2 : 3;
+        new Chart(document.getElementById(canvasId).getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [value, max - value],
+                    backgroundColor: [colors[idx], '#e5e7eb'],
+                    borderWidth: 0,
+                    circumference: 180,
+                    rotation: 270,
+                }]
+            },
+            options: {
+                responsive: true,
+                cutout: '75%',
+                plugins: { legend: { display: false }, tooltip: { enabled: false } }
+            }
+        });
+        document.getElementById(labelId).innerHTML =
+            '<strong style="font-size:1.5rem;color:'+colors[idx]+'">' + value + '</strong>/100<br>' + labels[idx];
+    }
+
+    // Forecast chart
+    if (forecastRaw && forecastRaw.length) {
+        new Chart(document.getElementById('forecastChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: forecastRaw.map(d => 'M' + d.month),
+                datasets: [
+                    {
+                        label: 'Monthly Profit',
+                        data: forecastRaw.map(d => d.profit),
+                        backgroundColor: forecastRaw.map(d => d.profit >= 0 ? '#10b981' : '#ef4444'),
+                        borderRadius: 4,
+                    },
+                    {
+                        label: 'Cumulative Profit',
+                        data: forecastRaw.map(d => d.cumulative_profit),
+                        type: 'line',
+                        borderColor: '#6366f1',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        yAxisID: 'y1',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { grid: { color: gridColor } },
+                    y: { title: { display: true, text: 'Monthly ($)' }, grid: { color: gridColor } },
+                    y1: { position: 'right', title: { display: true, text: 'Cumulative ($)' },
+                           grid: { drawOnChartArea: false } }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
+        <a href="{{ url_for('projects.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> New Project
+        </a>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon bg-primary"><i class="fas fa-folder"></i></div>
+            <div class="stat-info">
+                <h3>{{ total_projects }}</h3>
+                <p>Total Projects</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon bg-success"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-info">
+                <h3>{{ analyzed_projects }}</h3>
+                <p>Analyzed</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon bg-info"><i class="fas fa-star"></i></div>
+            <div class="stat-info">
+                <h3>{{ avg_feasibility }}</h3>
+                <p>Avg Feasibility</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon bg-warning"><i class="fas fa-dollar-sign"></i></div>
+            <div class="stat-info">
+                <h3>{{ profitable_count }}</h3>
+                <p>Profitable</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- Risk Distribution Chart -->
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-shield-alt"></i> Risk Distribution</h2>
+            </div>
+            <div class="card-body">
+                <canvas id="riskChart" height="250"></canvas>
+            </div>
+        </div>
+
+        <!-- Recent Projects -->
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-clock"></i> Recent Projects</h2>
+            </div>
+            <div class="card-body">
+                {% if recent_projects %}
+                <div class="project-list">
+                    {% for project in recent_projects %}
+                    <a href="{{ url_for('projects.detail', project_id=project.id) }}" class="project-item">
+                        <div class="project-item-info">
+                            <strong>{{ project.name }}</strong>
+                            <span class="text-muted">{{ project.industry or 'General' }}</span>
+                        </div>
+                        <span class="badge badge-{{ project.status }}">{{ project.status }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-folder-open"></i>
+                    <p>No projects yet. Create your first analysis!</p>
+                    <a href="{{ url_for('projects.create') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Create Project
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const riskData = {{ risk_distribution | tojson }};
+    const ctx = document.getElementById('riskChart');
+    if (ctx) {
+        new Chart(ctx.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Low', 'Medium', 'High', 'Critical'],
+                datasets: [{
+                    data: [riskData.low, riskData.medium, riskData.high, riskData.critical],
+                    backgroundColor: ['#10b981', '#f59e0b', '#f97316', '#ef4444'],
+                    borderWidth: 2,
+                    borderColor: getComputedStyle(document.documentElement)
+                        .getPropertyValue('--card-bg').trim() || '#fff',
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

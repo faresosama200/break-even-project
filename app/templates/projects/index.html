@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}My Projects{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1><i class="fas fa-folder-open"></i> My Projects</h1>
+        <a href="{{ url_for('projects.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> New Project
+        </a>
+    </div>
+
+    {% if projects %}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Industry</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for project in projects %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('projects.detail', project_id=project.id) }}">
+                            <strong>{{ project.name }}</strong>
+                        </a>
+                    </td>
+                    <td>{{ project.industry or 'N/A' }}</td>
+                    <td><span class="badge badge-{{ project.status }}">{{ project.status }}</span></td>
+                    <td>{{ project.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td class="actions">
+                        <a href="{{ url_for('projects.detail', project_id=project.id) }}"
+                           class="btn btn-sm btn-outline" title="View">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="{{ url_for('projects.edit', project_id=project.id) }}"
+                           class="btn btn-sm btn-outline" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{{ url_for('reports.project_report', project_id=project.id) }}"
+                           class="btn btn-sm btn-outline" title="Report">
+                            <i class="fas fa-file-alt"></i>
+                        </a>
+                        <form method="POST" action="{{ url_for('projects.delete', project_id=project.id) }}"
+                              style="display:inline" onsubmit="return confirm('Delete this project?')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-danger" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state-large">
+        <i class="fas fa-chart-pie"></i>
+        <h2>No Projects Yet</h2>
+        <p>Create your first project to start analyzing business feasibility.</p>
+        <a href="{{ url_for('projects.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Create First Project
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

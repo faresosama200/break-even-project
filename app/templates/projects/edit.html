@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Edit — {{ project.name }}{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1><i class="fas fa-edit"></i> Edit: {{ project.name }}</h1>
+    </div>
+
+    <form method="POST" class="project-form" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="card">
+            <div class="card-header"><h2><i class="fas fa-info-circle"></i> Project Information</h2></div>
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">Project Name *</label>
+                        <input type="text" id="name" name="name" class="form-control"
+                               value="{{ form.get('name', '') or project.name }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="industry">Industry</label>
+                        <select id="industry" name="industry" class="form-control">
+                            <option value="">Select...</option>
+                            {% set current_ind = form.get('industry', '') or project.industry %}
+                            {% for ind in ['Manufacturing', 'Food & Beverage', 'Technology', 'Retail',
+                                            'Services', 'Agriculture', 'Handcraft', 'E-commerce', 'Other'] %}
+                            <option value="{{ ind }}" {{ 'selected' if current_ind == ind }}>{{ ind }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description" class="form-control" rows="3">{{ form.get('description', '') or project.description or '' }}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="currency">Currency</label>
+                        <select id="currency" name="currency" class="form-control">
+                            {% set cur = form.get('currency', '') or project.currency %}
+                            {% for c in ['USD', 'EUR', 'GBP', 'SAR', 'AED', 'EGP', 'IQD'] %}
+                            <option value="{{ c }}" {{ 'selected' if cur == c }}>{{ c }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h2><i class="fas fa-calculator"></i> Financial Data</h2></div>
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="fixed_costs">Fixed Costs *</label>
+                        <input type="number" id="fixed_costs" name="fixed_costs" class="form-control"
+                               value="{{ form.get('fixed_costs', '') or (fin_input.fixed_costs if fin_input else '') }}"
+                               required min="0" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="variable_cost_per_unit">Variable Cost / Unit *</label>
+                        <input type="number" id="variable_cost_per_unit" name="variable_cost_per_unit"
+                               class="form-control"
+                               value="{{ form.get('variable_cost_per_unit', '') or (fin_input.variable_cost_per_unit if fin_input else '') }}"
+                               required min="0" step="0.01">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="selling_price_per_unit">Selling Price / Unit *</label>
+                        <input type="number" id="selling_price_per_unit" name="selling_price_per_unit"
+                               class="form-control"
+                               value="{{ form.get('selling_price_per_unit', '') or (fin_input.selling_price_per_unit if fin_input else '') }}"
+                               required min="0" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="expected_production_volume">Expected Volume *</label>
+                        <input type="number" id="expected_production_volume" name="expected_production_volume"
+                               class="form-control"
+                               value="{{ form.get('expected_production_volume', '') or (fin_input.expected_production_volume if fin_input else '') }}"
+                               required min="1" step="1">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="initial_investment">Initial Investment</label>
+                        <input type="number" id="initial_investment" name="initial_investment"
+                               class="form-control"
+                               value="{{ form.get('initial_investment', '') or (fin_input.initial_investment if fin_input else '0') }}"
+                               min="0" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="time_horizon_months">Time Horizon (months)</label>
+                        <input type="number" id="time_horizon_months" name="time_horizon_months"
+                               class="form-control"
+                               value="{{ form.get('time_horizon_months', '') or (fin_input.time_horizon_months if fin_input else '12') }}"
+                               min="1" max="60">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{{ url_for('projects.detail', project_id=project.id) }}" class="btn btn-outline">Cancel</a>
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-sync-alt"></i> Re-Analyze
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
